@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+    <TextView
+        style="@style/TitleStyle"
+        android:text="功能列表"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:text="拥有此令牌者，一人之下，万人之上!!!重要的事情说三遍！--拥有此令牌者，一人之下，万人之上!!!重要的事情说三遍！--拥有此令牌者，一人之下，万人之上!!!重要的事情说三遍！"
+        android:singleLine="true"
+        android:ellipsize="marquee"/>
+    <GridView
+        android:id="@+id/gv_home"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:numColumns="3"
+        android:verticalSpacing="20dp">
+
+    </GridView>
+</LinearLayout>

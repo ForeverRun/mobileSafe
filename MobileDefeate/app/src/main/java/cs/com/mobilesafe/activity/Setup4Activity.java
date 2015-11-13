@@ -1,8 +1,9 @@
 package cs.com.mobilesafe.activity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import cs.com.mobilesafe.R;
 
@@ -12,24 +13,47 @@ import cs.com.mobilesafe.R;
  */
 public class Setup4Activity extends BaseSetupActivity {
 
-    private SharedPreferences mPref;
+    private CheckBox mCheck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup4);
+        mCheck = (CheckBox) findViewById(R.id.cb_protect);
 
-        mPref = getSharedPreferences("config",MODE_PRIVATE);
+       boolean protect = mPref.getBoolean("protect",false);
+        //当check发生改变时，回掉此方法
+        if(protect){
+            mCheck.setText("防盗保护已经开启");
+            mCheck.setChecked(true);
+        }else{
+            mCheck.setText("防盗保护没有开启");
+            mCheck.setChecked(false);
+        }
+        mCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    mCheck.setText("防盗保护已经开启");
+                    mPref.edit().putBoolean("protect",true).commit();
+                }else{
+                    mCheck.setText("防盗保护没有开启");
+                    mPref.edit().putBoolean("protect",false).commit();
+                }
+            }
+        });
     }
-    public void showNextPage(){
-        startActivity(new Intent(this,LostFindActivity.class));
+
+    public void showNextPage() {
+        startActivity(new Intent(this, LostFindActivity.class));
         finish();
         overridePendingTransition(R.anim.tran_in, R.anim.tran_out);
 
-        mPref.edit().putBoolean("configed",true).commit();
+        mPref.edit().putBoolean("configed", true).commit();
     }
-    public void showPreviousPage(){
-        startActivity(new Intent(this,Setup3Activity.class));
+
+    public void showPreviousPage() {
+        startActivity(new Intent(this, Setup3Activity.class));
         finish();
         overridePendingTransition(R.anim.tran_previous_in, R.anim.tran_previous_out);
     }

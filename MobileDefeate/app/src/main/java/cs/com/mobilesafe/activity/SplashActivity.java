@@ -2,6 +2,8 @@ package cs.com.mobilesafe.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
@@ -30,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -37,6 +40,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import cs.com.mobilesafe.R;
+import cs.com.mobilesafe.receiver.AdminReceiver;
 import cs.com.mobilesafe.utils.StreamUtils;
 
 public class SplashActivity extends Activity {
@@ -84,6 +88,7 @@ public class SplashActivity extends Activity {
            }
         }
     };
+    private InputStream is;
 
 
     @Override
@@ -95,6 +100,9 @@ public class SplashActivity extends Activity {
         tvProgress = (TextView) findViewById(R.id.tv_download);
         rlRoot = (RelativeLayout) findViewById(R.id.rl_root);
         SharedPreferences mPref = getSharedPreferences("config",MODE_PRIVATE);
+        //拷贝归属地数据库
+        copyDB("address.db");
+
         //判断是否需要更新
        boolean autoupdate = mPref.getBoolean("auto_update",true);
         if(autoupdate){
@@ -107,6 +115,18 @@ public class SplashActivity extends Activity {
         AlphaAnimation anim = new AlphaAnimation(0.3f,1f);
         anim.setDuration(2000);
         rlRoot.startAnimation(anim);
+
+        ComponentName mDeviceAdminSample = new ComponentName(this, AdminReceiver.class);
+        activeAdmin(mDeviceAdminSample);
+    }
+
+    private void activeAdmin(ComponentName mDeviceAdminSample) {
+        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN,
+                mDeviceAdminSample);
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                "哈哈哈, 我们有了超级设备管理器, 好NB!");
+        startActivity(intent);
     }
 
 
@@ -299,5 +319,48 @@ public class SplashActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         enterHome();
+    }
+
+    /**
+     * 拷贝数据库
+     * @param dbName
+     */
+    public void copyDB(String dbName){
+        File f =getFilesDir();
+        Log.e("震哥",f.getAbsolutePath());
+        //要拷贝的目录地址
+        File ff = new File(getFilesDir(), dbName);
+        if(ff.exists()){
+            Log.e("震哥","数据库已存在");
+            return;
+        }
+
+        InputStream is = null;
+        FileOutputStream os = null;
+
+        try {
+
+             is = getAssets().open(dbName);
+           // Log.e("震哥","有问题吗？33666633");
+             os = new FileOutputStream(ff);
+
+            byte[] by = new byte[1024];
+            int len = 0;
+            while((len = is.read(by))!=-1){
+                os.write(by,0,len);
+            }
+            Log.e("震哥","有问题吗？");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                is.close();
+                os.close();
+            } catch (IOException e) {
+
+                e.printStackTrace();
+            }
+
+        }
     }
 }

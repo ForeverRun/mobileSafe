@@ -49,6 +49,12 @@ public class HomeActivity extends Activity {
                     case 0:
                         showPasswordDailog();
                         break;
+                    case 1:
+                        startActivity(new Intent(HomeActivity.this,CallSafeActivity2.class));
+                        break;
+                    case 7:
+                        startActivity(new Intent(HomeActivity.this, AtoolsActivity.class));
+                        break;
                     case 8:
                         startActivity(new Intent(HomeActivity.this,SettingActivity.class));
                         break;
@@ -75,7 +81,7 @@ public class HomeActivity extends Activity {
     private void showPasswordInputDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final AlertDialog dialog = builder.create();
-        View v = View.inflate(this,R.layout.dailog_input_password,null);
+        View v = View.inflate(this,R.layout.dialog_input_password,null);
         dialog.setView(v, 0, 0, 0, 0);
         final EditText etpassword = (EditText) v.findViewById(R.id.et_password);
 
@@ -115,7 +121,7 @@ public class HomeActivity extends Activity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final AlertDialog dialog = builder.create();
 
-        View v = View.inflate(this,R.layout.dailog_set_password,null);
+        View v = View.inflate(this,R.layout.dialog_set_password,null);
         //将自定义布局文件设置给dialog
         //dialog.setView(v);
         //设置边框距离，保证在2.X版本界面兼容

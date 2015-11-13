@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MobileDefeate</string>
+    <string name="sample_device_admin_description">有了超级管理器，妈妈再也不担心我锁屏清除数据了</string>
+    <string name="sample_device_admin">宇宙至强超级管理器</string>
 </resources>

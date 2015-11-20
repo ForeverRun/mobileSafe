@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,11 +23,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.lidroid.xutils.HttpUtils;
 import com.lidroid.xutils.exception.HttpException;
 import com.lidroid.xutils.http.HttpHandler;
 import com.lidroid.xutils.http.ResponseInfo;
 import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest;
+
+import net.youmi.android.AdManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +44,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import cs.com.mobilesafe.Bean.Virus;
 import cs.com.mobilesafe.R;
+import cs.com.mobilesafe.db.dao.AntivirusDao;
 import cs.com.mobilesafe.receiver.AdminReceiver;
 import cs.com.mobilesafe.utils.StreamUtils;
 
@@ -61,6 +68,7 @@ public class SplashActivity extends Activity {
     //private float mVersionCode;
     private String mDesc;// 版本描述
     private String mDownloadUrl;// 下载地址
+    private AntivirusDao vdao;
 
     Handler handler = new Handler(){
         @Override
@@ -95,6 +103,8 @@ public class SplashActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        AdManager.getInstance(this).init("3975679c846903f0", "3b5eaad95fcbb43c", false);
+
         tvVersion = (TextView) findViewById(R.id.tv_version);
         tvVersion.setText("版本号：" + getVersionName());
         tvProgress = (TextView) findViewById(R.id.tv_download);
@@ -102,6 +112,12 @@ public class SplashActivity extends Activity {
         SharedPreferences mPref = getSharedPreferences("config",MODE_PRIVATE);
         //拷贝归属地数据库
         copyDB("address.db");
+
+        //拷贝病毒数据库
+        copyDB("antivirus.db");
+
+        //更新病毒库
+        updataVirus();
 
         //判断是否需要更新
        boolean autoupdate = mPref.getBoolean("auto_update",true);
@@ -118,6 +134,81 @@ public class SplashActivity extends Activity {
 
         ComponentName mDeviceAdminSample = new ComponentName(this, AdminReceiver.class);
         activeAdmin(mDeviceAdminSample);
+
+        createShortCut();
+    }
+
+    /**
+     * 进行更新病毒数据库
+     */
+    private void updataVirus() {
+        vdao = new AntivirusDao();
+
+        //联网从服务器获取到最新数据的md5的特征码
+
+        HttpUtils httpUtils = new HttpUtils();
+
+        String url = "http://192.168.3.12:8080/virus.json";
+
+        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+
+            @Override
+            public void onFailure(HttpException arg0, String arg1) {
+
+
+            }
+
+            @Override
+            public void onSuccess(ResponseInfo<String> arg0) {
+                System.out.println(arg0.result);
+                //				﻿{"md5":"51dc6ba54cbfbcff299eb72e79e03668","desc":"蝗虫病毒赶快卸载"}
+
+                try {
+                    JSONObject jsonObject = new JSONObject(arg0.result);
+
+                    Gson gson = new Gson();
+                    //解析json
+                    Virus virus = gson.fromJson(arg0.result, Virus.class);
+
+//                    String md5 = jsonObject.getString("md5");
+//
+//                    String desc = jsonObject.getString("desc");
+
+                    //vdao.addVirus(md5, desc);
+                    vdao.addVirus(virus.md5, virus.desc);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+    //创建快捷方式
+    private void createShortCut() {
+        Intent it = new Intent();
+        it.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+        //如果设置为true表示可以创建重复的快捷方式
+        it.putExtra("duplicate", false);
+        /**
+         * 1 干什么事情
+         * 2 你叫什么名字
+         * 3你长成什么样子
+         */
+        //设置手机图标
+        it.putExtra(Intent.EXTRA_SHORTCUT_ICON,
+                BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+        //设置手机应用名字
+        it.putExtra(Intent.EXTRA_SHORTCUT_NAME, "手机圣斗士");
+
+        //Intent short_cut = new Intent(this,HomeActivity.class);
+        //创建隐式意图
+        Intent short_cut = new Intent();
+        short_cut.setAction("So_Easy");
+        short_cut.addCategory("android.intent.category.DEFAULT");
+        it.putExtra(Intent.EXTRA_SHORTCUT_INTENT,short_cut);
+        sendBroadcast(it);
     }
 
     private void activeAdmin(ComponentName mDeviceAdminSample) {
@@ -327,7 +418,7 @@ public class SplashActivity extends Activity {
      */
     public void copyDB(String dbName){
         File f =getFilesDir();
-        Log.e("震哥",f.getAbsolutePath());
+       //  Log.e("震哥",f.getAbsolutePath());
         //要拷贝的目录地址
         File ff = new File(getFilesDir(), dbName);
         if(ff.exists()){
@@ -360,7 +451,6 @@ public class SplashActivity extends Activity {
 
                 e.printStackTrace();
             }
-
         }
     }
 }

@@ -10,7 +10,9 @@ import android.view.View;
 
 import cs.com.mobilesafe.R;
 import cs.com.mobilesafe.Service.AddressService;
-import cs.com.mobilesafe.utils.ServiceStatusUtils;
+import cs.com.mobilesafe.Service.CallSafeService;
+import cs.com.mobilesafe.Service.WatchDogService;
+import cs.com.mobilesafe.utils.ServiceStatusInfoUtils;
 import cs.com.mobilesafe.view.SettingClickView;
 import cs.com.mobilesafe.view.SettingItemView;
 
@@ -25,6 +27,9 @@ public class SettingActivity extends Activity{
     private SettingClickView scv;
     private SettingClickView scvAddressLocation;
     private SettingItemView sivRocket;
+    private SettingItemView sivCallSafe;
+    private SettingItemView sivAppLock;
+    private Intent appLockIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,63 @@ public class SettingActivity extends Activity{
         initAddressStyle();
         initAddresssLocation();
         //initRocket();
+        initBlackView();
+        initAppLockService();
+    }
+
+    /**
+     * 程序锁服务的开启关闭设置
+     */
+    private void initAppLockService() {
+        sivAppLock = (SettingItemView) findViewById(R.id.siv_applock);
+        appLockIntent = new Intent(this, WatchDogService.class);
+        boolean appLockServiceRunning = ServiceStatusInfoUtils.isRunning(this, "cs.com.mobilesafe.Service.WatchDogService");
+        //根据服务是否运行，来确定用不用勾选选择框
+        if(appLockServiceRunning){
+            sivAppLock.setCheck(true);
+        }else{
+            sivAppLock.setCheck(false);
+        }
+        sivAppLock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               if(sivAppLock.isChecked()){
+                   //关闭应用锁服务
+                   sivAppLock.setCheck(false);
+                   stopService(appLockIntent);
+               }else{
+                   //开启应用锁服务
+                   sivAppLock.setCheck(true);
+                   startService(appLockIntent);
+               }
+            }
+        });
+    }
+
+    private void initBlackView() {
+        sivCallSafe = (SettingItemView) findViewById(R.id.siv_callsafe);
+        boolean serviceRunning = ServiceStatusInfoUtils.isRunning(this, "cs.com.mobilesafe.Service.CallSafeService");
+        //根据服务是否运行，来确定用不用勾选选择框
+        if(serviceRunning){
+            sivCallSafe.setCheck(true);
+        }else {
+            sivCallSafe.setCheck(false);
+        }
+
+        sivCallSafe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (sivCallSafe.isChecked()) {
+                    sivCallSafe.setCheck(false);
+                    //关闭黑名单服务
+                    stopService(new Intent(SettingActivity.this, CallSafeService.class));
+                } else {
+                    sivCallSafe.setCheck(true);
+                    //开启黑名单服务
+                    startService(new Intent(SettingActivity.this, CallSafeService.class));
+                }
+            }
+        });
     }
 
     /**
@@ -116,14 +178,13 @@ public class SettingActivity extends Activity{
     public void initAddressView(){
 
         sivAddress = (SettingItemView) findViewById(R.id.siv_address);
-        boolean serviceRunning = ServiceStatusUtils.isRunning(this, "cs.com.mobilesafe.Service.AddressService");
+        boolean serviceRunning = ServiceStatusInfoUtils.isRunning(this, "cs.com.mobilesafe.Service.AddressService");
         //根据服务是否运行，来确定用不用勾选选择框
         if(serviceRunning){
             sivAddress.setCheck(true);
         }else {
             sivAddress.setCheck(false);
         }
-
         sivAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

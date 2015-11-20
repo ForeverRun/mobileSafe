@@ -50,7 +50,19 @@ public class HomeActivity extends Activity {
                         showPasswordDailog();
                         break;
                     case 1:
-                        startActivity(new Intent(HomeActivity.this,CallSafeActivity2.class));
+                        startActivity(new Intent(HomeActivity.this, CallSafeActivity2.class));
+                        break;
+                    case 2:
+                        startActivity(new Intent(HomeActivity.this,AppManagerActivity.class));
+                        break;
+                    case 3:
+                        startActivity(new Intent(HomeActivity.this,TaskManagerActivity.class));
+                        break;
+                    case 5:
+                        startActivity(new Intent(HomeActivity.this,AntivirusActivity.class));
+                        break;
+                    case 6:
+                        startActivity(new Intent(HomeActivity.this,CleanCacheActivity.class));
                         break;
                     case 7:
                         startActivity(new Intent(HomeActivity.this, AtoolsActivity.class));
